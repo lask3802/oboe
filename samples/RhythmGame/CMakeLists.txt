@@ -35,7 +35,7 @@ if(${USE_FFMPEG})
 
     # Add the local path to FFmpeg, you can use the ${ANDROID_ABI} variable to specify the ABI name
     # e.g. /Users/donturner/Code/ffmpeg/build/${ANDROID_ABI}
-    set(FFMPEG_DIR "/path/to/ffmpeg")
+    set(FFMPEG_DIR F:/repos/ffmpeg-android-maker/build/ffmpeg/${ANDROID_ABI})
 
     include_directories(native-lib ${FFMPEG_DIR}/include)
 
@@ -75,4 +75,5 @@ include_directories (${OBOE_DIR}/include ${OBOE_DIR}/samples)
 # Enable optimization flags: if having problems with source level debugging,
 # disable -Ofast ( and debug ), re-enable after done debugging.
 target_compile_options(native-lib
-    PRIVATE -std=c++14 -Wall -Werror "$<$<CONFIG:RELEASE>:-Ofast>")
+    PRIVATE -std=c++17 -Wall -Werror "$<$<CONFIG:RELEASE>:-Ofast>")
+

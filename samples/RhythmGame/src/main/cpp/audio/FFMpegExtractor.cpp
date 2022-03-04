@@ -1,4 +1,4 @@
-/*
+ /*
  * Copyright 2018 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -230,8 +230,10 @@ int64_t FFMpegExtractor::decode(
 
     // Prepare to read data
     int bytesWritten = 0;
-    AVPacket avPacket; // Stores compressed audio data
-    av_init_packet(&avPacket);
+    auto packetDeleter = [](AVPacket *p){
+        av_packet_free(&p);
+    };
+    std::unique_ptr<AVPacket, decltype(packetDeleter)> avPacket(av_packet_alloc(),packetDeleter);
     AVFrame *decodedFrame = av_frame_alloc(); // Stores raw audio data
     int bytesPerSample = av_get_bytes_per_sample((AVSampleFormat)stream->codecpar->format);
 
@@ -240,12 +242,12 @@ int64_t FFMpegExtractor::decode(
     LOGD("DECODE START");
 
     // While there is more data to read, read it into the avPacket
-    while (av_read_frame(formatContext.get(), &avPacket) == 0){
+    while (av_read_frame(formatContext.get(), avPacket.get()) == 0){
 
-        if (avPacket.stream_index == stream->index && avPacket.size > 0) {
+        if (avPacket->stream_index == stream->index && avPacket->size > 0) {
 
             // Pass our compressed data into the codec
-            result = avcodec_send_packet(codecContext.get(), &avPacket);
+            result = avcodec_send_packet(codecContext.get(), avPacket.get());
             if (result != 0) {
                 LOGE("avcodec_send_packet error: %s", av_err2str(result));
                 goto cleanup;
@@ -256,7 +258,7 @@ int64_t FFMpegExtractor::decode(
             if (result == AVERROR(EAGAIN)) {
                 // The codec needs more data before it can decode
                 LOGI("avcodec_receive_frame returned EAGAIN");
-                av_packet_unref(&avPacket);
+                av_packet_unref(avPacket.get());
                 continue;
             } else if (result != 0) {
                 LOGE("avcodec_receive_frame error: %s", av_err2str(result));
@@ -290,7 +292,7 @@ int64_t FFMpegExtractor::decode(
             bytesWritten += bytesToWrite;
             av_freep(&buffer1);
 
-            av_packet_unref(&avPacket);
+            av_packet_unref(avPacket.get());
         }
     }
 
