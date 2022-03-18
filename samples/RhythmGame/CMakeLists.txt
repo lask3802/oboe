@@ -4,16 +4,17 @@ include_directories(third_party)
 
 include_directories(src/main/cpp/)
 
-add_library( native-lib
+add_library( laudio
              SHARED
 
              # main game files
-             src/main/cpp/native-lib.cpp
+             src/main/cpp/laudio.cpp
              src/main/cpp/Game.cpp
 
              # audio engine
              src/main/cpp/audio/AAssetDataSource.cpp
              src/main/cpp/audio/Player.cpp
+             src/main/cpp/audio/RawAudioSource.cpp
 
              # UI engine
              src/main/cpp/ui/OpenGLFunctions.cpp
@@ -31,13 +32,13 @@ if(${USE_FFMPEG})
     MESSAGE(STATUS "Using FFmpeg extractor")
 
     add_definitions(-DUSE_FFMPEG=1)
-    target_sources( native-lib PRIVATE src/main/cpp/audio/FFMpegExtractor.cpp )
+    target_sources( laudio PRIVATE src/main/cpp/audio/FFMpegExtractor.cpp )
 
     # Add the local path to FFmpeg, you can use the ${ANDROID_ABI} variable to specify the ABI name
     # e.g. /Users/donturner/Code/ffmpeg/build/${ANDROID_ABI}
     set(FFMPEG_DIR F:/repos/ffmpeg-android-maker/build/ffmpeg/${ANDROID_ABI})
 
-    include_directories(native-lib ${FFMPEG_DIR}/include)
+    include_directories(laudio ${FFMPEG_DIR}/include)
 
     add_library( avformat SHARED IMPORTED)
     set_target_properties(avformat PROPERTIES IMPORTED_LOCATION
@@ -56,11 +57,11 @@ if(${USE_FFMPEG})
 else()
     MESSAGE(STATUS "Using NDK media extractor")
     add_definitions(-DUSE_FFMPEG=0)
-    target_sources( native-lib PRIVATE src/main/cpp/audio/NDKExtractor.cpp )
+    target_sources( laudio PRIVATE src/main/cpp/audio/NDKExtractor.cpp )
     set (TARGET_LIBS ${TARGET_LIBS} mediandk)
 endif()
 
-target_link_libraries( native-lib ${TARGET_LIBS} )
+target_link_libraries( laudio ${TARGET_LIBS} )
 
 
 # Set the path to the Oboe directory.
@@ -74,6 +75,6 @@ include_directories (${OBOE_DIR}/include ${OBOE_DIR}/samples)
 
 # Enable optimization flags: if having problems with source level debugging,
 # disable -Ofast ( and debug ), re-enable after done debugging.
-target_compile_options(native-lib
+target_compile_options(laudio
     PRIVATE -std=c++17 -Wall -Werror "$<$<CONFIG:RELEASE>:-Ofast>")
 

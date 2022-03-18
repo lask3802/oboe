@@ -53,8 +53,10 @@ AAssetDataSource* AAssetDataSource::newFromCompressedAsset(
 #if USE_FFMPEG==true
     const long maximumDataSizeInBytes = kMaxCompressionRatio * assetSize * sizeof(float);
     auto decodedData = new uint8_t[maximumDataSizeInBytes];
-
-    int64_t bytesDecoded = FFMpegExtractor::decode(asset, decodedData, targetProperties);
+    auto size = AAsset_getLength(asset);
+    std::vector<uint8_t> assetData(size);
+    AAsset_read(asset, assetData.data(), size);
+    int64_t bytesDecoded = FFMpegExtractor::decode(assetData, decodedData, targetProperties);
     auto numSamples = bytesDecoded / sizeof(float);
 #else
     const long maximumDataSizeInBytes = kMaxCompressionRatio * assetSize * sizeof(int16_t);

@@ -47,6 +47,7 @@ public:
     void resetPlayHead() { mReadFrameIndex = 0; };
     void setPlaying(bool isPlaying) { mIsPlaying = isPlaying; resetPlayHead(); };
     void setLooping(bool isLooping) { mIsLooping = isLooping; };
+    int64_t getPositionInFrame(){return mReadFrameIndex;};
 
 private:
     int32_t mReadFrameIndex = 0;

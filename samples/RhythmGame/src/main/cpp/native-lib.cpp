@@ -15,7 +15,6 @@
  */
 #include <jni.h>
 #include <memory>
-
 #include <android/asset_manager_jni.h>
 
 #include "utils/logging.h"
@@ -25,6 +24,10 @@
 extern "C" {
 
 std::unique_ptr<Game> game;
+
+void clog(){
+    LOGD("clog is called");
+}
 
 JNIEXPORT void JNICALL
 Java_com_google_oboe_samples_rhythmgame_MainActivity_native_1onStart(JNIEnv *env, jobject instance,
